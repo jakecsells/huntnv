@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_array_map_type">
+    	<item>Terrain</item>
+    	<item>Satellite</item>
+    	<item>Hybrid</item>
+    	<item>Normal</item>
+    </string-array>
+    <string-array name="pref_array_map_type_val">
+    	<item>1</item>
+    	<item>2</item>
+    	<item>3</item>
+    	<item>4</item>
+    </string-array>
+</resources>
