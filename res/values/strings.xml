@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">huntr</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_search">Hunt Unit</string>
+    <string name="action_search_hint">Hunt Unit (e.g. 51)</string>
+    <string name="action_waypoint">Create Waypoint</string>
+    <string name="waypoint_lat">Latitude</string>
+    <string name="waypoint_lng">Longitude</string>
+    <string name="pref_category_map">Map</string>
+    <string name="pref_title_map_type">Map Type</string>
+    <string name="pref_title_map_allow_loc">Allow GPS Location</string>
+    <string name="pref_summary_map_allow_loc">Allow this application to access your current location via Google Maps</string>
+    <string name="title_activity_waypoint">WaypointActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="button_current_loc">Current</string>
+    <string name="waypoint_title">Title</string>
+    <string name="button_submit">Submit</string>
+
+</resources>
