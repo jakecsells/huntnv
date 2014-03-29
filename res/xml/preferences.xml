@@ -7,11 +7,13 @@
                 android:key="pref_map_type"
                 android:title="@string/pref_title_map_type"
                 android:entries="@array/pref_array_map_type"
-                android:entryValues="@array/pref_array_map_type_val" />
+                android:entryValues="@array/pref_array_map_type_val"
+                android:defaultValue="1" />
         <CheckBoxPreference
         		android:key="pref_map_allow_loc"
         		android:title="@string/pref_title_map_allow_loc"
-        		android:summary="@string/pref_summary_map_allow_loc" />
+        		android:summary="@string/pref_summary_map_allow_loc"
+        		android:defaultValue="@bool/default_true" />
     </PreferenceCategory>
 
 </PreferenceScreen>

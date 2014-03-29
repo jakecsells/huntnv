@@ -1,0 +1,4 @@
+<resources>
+    <bool name="default_true">true</bool>
+    <bool name="default_false">false</bool>
+</resources>

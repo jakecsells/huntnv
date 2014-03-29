@@ -1,8 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">huntr</string>
+    <string name="app_name">HuntNV</string>
     <string name="action_settings">Settings</string>
+    <string name="action_about">About</string>
+    <string name="about_author">Author</string>
+    <string name="about_author_text">My name is Jake Sells. I attended the University of Nevada, Reno. I have been
+    	raised in Nevada. My friends and family actively hunt in Nevada and I hoped to make their trips a little bit
+    	easier by creating this application.</string>
+    <string name="about_contact">Contact</string>
+    <string name="about_contact_text">Please feel free to contact me about this application or comments in general.</string>
+    <string name="email">Email</string>
+    <string name="my_email">jakecsells@gmail.com</string>
+    <string name="phone">Phone</string>
+    <string name="my_phone">(775) 781-8799</string>
+    <string name="rate">Rate this App</string>
+    <string name="ask_rate">If you liked this app or if it has helped you, please rate it for my feedback.</string>
     <string name="action_search">Hunt Unit</string>
     <string name="action_search_hint">Hunt Unit (e.g. 51)</string>
     <string name="action_waypoint">Create Waypoint</string>
@@ -17,5 +30,6 @@
     <string name="button_current_loc">Current</string>
     <string name="waypoint_title">Title</string>
     <string name="button_submit">Submit</string>
+    <string name="title_activity_about">About</string>
 
 </resources>

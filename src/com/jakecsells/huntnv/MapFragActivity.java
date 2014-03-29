@@ -38,6 +38,9 @@ public class MapFragActivity extends Activity {
 	private LatLngBounds currentBounds;
 	private Menu menu;
 	
+	// Global Constants
+	private int CREATE_WAYPOINT_REQUEST = 1;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +53,6 @@ public class MapFragActivity extends Activity {
         // Get a handle to the Map Fragment
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
         map.moveCamera( CameraUpdateFactory.newLatLngZoom(new LatLng(39.0, -117.0), 6)); 
-        map.setMyLocationEnabled(true);
         
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
     	switch(Integer.valueOf(sharedPreferences.getString("pref_map_type", "1"))) {
@@ -70,6 +72,7 @@ public class MapFragActivity extends Activity {
 	    		map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
 	    		break;
     	}
+        map.setMyLocationEnabled(true);
         
         dbHelper = new DataBaseHelper(this);
  
@@ -171,6 +174,7 @@ public class MapFragActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
+    	Intent intent;
         switch (item.getItemId()) {
             case R.id.action_settings:
             	if(getFragmentManager().getBackStackEntryCount() == 0){
@@ -182,8 +186,12 @@ public class MapFragActivity extends Activity {
 	                }
                 return true;
             case R.id.action_waypoint:
-                Intent intent = new Intent(MapFragActivity.this, WaypointActivity.class);
-                startActivity(intent);
+                intent = new Intent(MapFragActivity.this, WaypointActivity.class);
+                startActivityForResult(intent, CREATE_WAYPOINT_REQUEST);
+            	return true;
+            case R.id.action_about:
+                intent = new Intent(MapFragActivity.this, AboutActivity.class);
+                startActivityForResult(intent, CREATE_WAYPOINT_REQUEST);
             	return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -207,6 +215,14 @@ public class MapFragActivity extends Activity {
         }
     }
     
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == CREATE_WAYPOINT_REQUEST && resultCode == RESULT_OK) {
+        	long resultId = data.getLongExtra("id", 1);
+        	displayWaypoint((int)resultId);
+        }
+    }
     
     private boolean displayHuntUnit(String huntunitnum) {
     	String rawcontent = dbHelper.getGeometry(huntunitnum);

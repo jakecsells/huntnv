@@ -4,8 +4,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -225,7 +228,7 @@ public class DataBaseHelper extends SQLiteOpenHelper{
 		    return temp_waypoint;
 	   }
 	   
-	   public void saveWaypoint(String title, double lat, double lng) {
+	   public long saveWaypoint(String title, double lat, double lng) {
 	        // get db
 	        SQLiteDatabase db = this.getWritableDatabase();
 	 
@@ -235,9 +238,9 @@ public class DataBaseHelper extends SQLiteOpenHelper{
 	        values.put(LAT, lat);
 	        values.put(LNG, lng);
 	 
-	        db.insert(TABLE_WAYPOINTS, null, values);
-	        db.close(); 
-
+	        long id = db.insert(TABLE_WAYPOINTS, null, values);
+	        db.close();
+	        return id;
 	   }
 	   
 	   public boolean deleteWaypoint(int id) {

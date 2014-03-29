@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <fragment 
+        android:name="com.jakecsells.huntnv.WaypointFragment"
+        android:id="@+id/waypoint_frag_activity"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/waypoint_lat"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/waypoint_lat"
+            android:layout_weight="50" />
+        <EditText
+		    android:id="@+id/input_lat"
+		    android:layout_width="0dp"
+		    android:layout_height="wrap_content"
+		    android:inputType="numberDecimal"
+		    android:layout_weight="50" />
+    </fragment>
+</RelativeLayout>
