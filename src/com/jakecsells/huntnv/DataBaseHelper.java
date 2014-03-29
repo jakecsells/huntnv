@@ -1,5 +1,8 @@
 package com.jakecsells.huntnv;
 
+//THIS CODE IS FROM http://www.reigndesign.com/blog/using-your-own-sqlite-database-in-android-applications/
+//WITH MODIFICATIONS FROM JAKE SELLS
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;

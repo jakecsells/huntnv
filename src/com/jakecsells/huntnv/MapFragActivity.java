@@ -1,6 +1,7 @@
 package com.jakecsells.huntnv;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import android.location.Criteria;
 import android.location.Location;
@@ -23,6 +24,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.SearchView;
+import org.w3c.dom.Document;
 
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
@@ -33,9 +35,11 @@ public class MapFragActivity extends Activity {
 
 	DataBaseHelper dbHelper = new DataBaseHelper(null);
 	GoogleMap map;
+	GMapV2Direction md;
 	private HashMap<Marker, Waypoint> idMarker;
 	private Polygon currentPolygon;
 	private LatLngBounds currentBounds;
+	private Polyline currentDirections;
 	private Menu menu;
 	
 	// Global Constants
@@ -43,6 +47,7 @@ public class MapFragActivity extends Activity {
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+    	setTitle("");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_frag_activity);
         
@@ -53,6 +58,8 @@ public class MapFragActivity extends Activity {
         // Get a handle to the Map Fragment
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
         map.moveCamera( CameraUpdateFactory.newLatLngZoom(new LatLng(39.0, -117.0), 6)); 
+        
+        md = new GMapV2Direction();
         
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
     	switch(Integer.valueOf(sharedPreferences.getString("pref_map_type", "1"))) {
@@ -140,7 +147,7 @@ public class MapFragActivity extends Activity {
     	}
 		return false;
     }
-    
+
     @Override
     public void onBackPressed() {
     	if(getFragmentManager().getBackStackEntryCount() > 0 ) {
@@ -193,6 +200,47 @@ public class MapFragActivity extends Activity {
                 intent = new Intent(MapFragActivity.this, AboutActivity.class);
                 startActivityForResult(intent, CREATE_WAYPOINT_REQUEST);
             	return true;
+            case R.id.action_directions:
+            	if(currentBounds != null) {
+    	   	    	// get users current position and adds to builder
+    	   	    	LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
+    	   	    	Criteria criteria = new Criteria();
+    	   	    	String provider = service.getBestProvider(criteria, false);
+    	   	    	Location location = service.getLastKnownLocation(provider);
+    	   	    	LatLng userLocation = new LatLng(location.getLatitude(),location.getLongitude());
+    	   	    	// get center of current hunt unit bounds
+    	   	    	LatLng destination = currentBounds.getCenter();
+            		Document doc = md.getDocument(userLocation, destination, GMapV2Direction.MODE_DRIVING);
+            		int duration = md.getDurationValue(doc);
+            		String distance = md.getDistanceText(doc);
+            		String start_address = md.getStartAddress(doc);
+            		String copy_right = md.getCopyRights(doc);
+            		// get direction polylines and display
+            		ArrayList<LatLng> directionPoint = md.getDirection(doc);
+            		PolylineOptions rectLine = new PolylineOptions().width(3).color(0xffff00ff);
+            		for(int i = 0 ; i < directionPoint.size() ; i++) {			
+            			rectLine.add(directionPoint.get(i));
+            		}
+            		currentDirections = map.addPolyline(rectLine);
+                	return true;
+            	}
+            	else {
+            		// need hunt unit view
+            		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        			alertDialogBuilder.setTitle("Error");
+        			alertDialogBuilder
+        				.setMessage("There is no current hunt unit.")
+        				.setCancelable(false)
+        				.setPositiveButton("Continue",new DialogInterface.OnClickListener() {
+        					public void onClick(DialogInterface dialog, int id) {
+        						dialog.cancel();
+        					}
+        				  });
+        			AlertDialog alertDialog = alertDialogBuilder.create();
+        			alertDialog.show();
+            		return false;
+            	}
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -210,7 +258,7 @@ public class MapFragActivity extends Activity {
             String query = intent.getStringExtra(SearchManager.QUERY);
             String formatquery = String.format("%03d", Integer.parseInt(query));
             this.displayHuntUnit(formatquery);
-            setTitle("Unit " + formatquery);
+            setTitle(formatquery);
             MenuItemCompat.collapseActionView(menu.findItem(R.id.action_search));
         }
     }

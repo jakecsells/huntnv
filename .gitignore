@@ -1,2 +1,4 @@
 *~
 AndroidManifest.xml
+bin/*
+gen/*

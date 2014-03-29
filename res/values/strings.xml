@@ -19,6 +19,7 @@
     <string name="action_search">Hunt Unit</string>
     <string name="action_search_hint">Hunt Unit (e.g. 51)</string>
     <string name="action_waypoint">Create Waypoint</string>
+    <string name="action_directions">Directions</string>
     <string name="waypoint_lat">Latitude</string>
     <string name="waypoint_lng">Longitude</string>
     <string name="pref_category_map">Map</string>
