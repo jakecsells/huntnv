@@ -7,6 +7,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
@@ -47,6 +48,11 @@ public class MapFragActivity extends Activity {
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
+    	
     	setTitle("");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_frag_activity);
@@ -210,6 +216,8 @@ public class MapFragActivity extends Activity {
     	   	    	LatLng userLocation = new LatLng(location.getLatitude(),location.getLongitude());
     	   	    	// get center of current hunt unit bounds
     	   	    	LatLng destination = currentBounds.getCenter();
+    	   	    	Log.e("LOCATION", String.valueOf(destination.latitude));
+    	   	    	Log.e("DESTINATION", String.valueOf(userLocation.latitude));
             		Document doc = md.getDocument(userLocation, destination, GMapV2Direction.MODE_DRIVING);
             		int duration = md.getDurationValue(doc);
             		String distance = md.getDistanceText(doc);
