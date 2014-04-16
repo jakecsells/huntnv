@@ -3,9 +3,12 @@ package com.jakecsells.huntnv;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
+
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
@@ -42,6 +45,8 @@ public class MapFragActivity extends Activity {
 	private LatLngBounds currentBounds;
 	private Polyline currentDirections;
 	private Menu menu;
+	private LocationManager serviceLoc;
+	LatLng userLocation;
 	
 	// Global Constants
 	private int CREATE_WAYPOINT_REQUEST = 1;
@@ -63,7 +68,9 @@ public class MapFragActivity extends Activity {
         
         // Get a handle to the Map Fragment
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-        map.moveCamera( CameraUpdateFactory.newLatLngZoom(new LatLng(39.0, -117.0), 6)); 
+        map.moveCamera( CameraUpdateFactory.newLatLngZoom(new LatLng(39.0, -117.0), 6));
+        
+        serviceLoc = (LocationManager) getSystemService(LOCATION_SERVICE);
         
         md = new GMapV2Direction();
         
@@ -107,16 +114,10 @@ public class MapFragActivity extends Activity {
     	}
     	
         map.setOnInfoWindowClickListener(new OnInfoWindowClickListener() {
-
             @Override
             public void onInfoWindowClick(final Marker marker) {
-            	// Delete Marker functionality
         		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapFragActivity.this);
-        	     
-    			// set title
     			alertDialogBuilder.setTitle("Delete");
-     
-    			// set dialog message
     			alertDialogBuilder
     				.setMessage("Permanently remove this waypoint?")
     				.setCancelable(false)
@@ -132,11 +133,7 @@ public class MapFragActivity extends Activity {
     						dialog.cancel();
     					}
     				});
-     
-    				// create alert dialog
     				AlertDialog alertDialog = alertDialogBuilder.create();
-     
-    				// show it
     				alertDialog.show();   
             }
         });
@@ -207,38 +204,55 @@ public class MapFragActivity extends Activity {
                 startActivityForResult(intent, CREATE_WAYPOINT_REQUEST);
             	return true;
             case R.id.action_directions:
-            	if(currentBounds != null) {
-    	   	    	// get users current position and adds to builder
-    	   	    	LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
-    	   	    	Criteria criteria = new Criteria();
-    	   	    	String provider = service.getBestProvider(criteria, false);
-    	   	    	Location location = service.getLastKnownLocation(provider);
-    	   	    	LatLng userLocation = new LatLng(location.getLatitude(),location.getLongitude());
-    	   	    	// get center of current hunt unit bounds
-    	   	    	LatLng destination = currentBounds.getCenter();
-    	   	    	Log.e("LOCATION", String.valueOf(destination.latitude));
-    	   	    	Log.e("DESTINATION", String.valueOf(userLocation.latitude));
-            		Document doc = md.getDocument(userLocation, destination, GMapV2Direction.MODE_DRIVING);
-            		int duration = md.getDurationValue(doc);
-            		String distance = md.getDistanceText(doc);
-            		String start_address = md.getStartAddress(doc);
-            		String copy_right = md.getCopyRights(doc);
-            		// get direction polylines and display
-            		ArrayList<LatLng> directionPoint = md.getDirection(doc);
-            		PolylineOptions rectLine = new PolylineOptions().width(3).color(0xffff00ff);
-            		for(int i = 0 ; i < directionPoint.size() ; i++) {			
-            			rectLine.add(directionPoint.get(i));
-            		}
-            		currentDirections = map.addPolyline(rectLine);
-                	return true;
-            	}
+            	getUserLocation();
+            	if(currentBounds != null && userLocation != null) {
+            		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapFragActivity.this);
+        			alertDialogBuilder.setTitle("View Method");
+        			alertDialogBuilder
+        				.setMessage("Where would you like to view these directions?")
+        				.setCancelable(false)
+        				.setPositiveButton("Google Maps",new DialogInterface.OnClickListener() {
+        					public void onClick(DialogInterface dialog, int id) {
+        						LatLng destination = currentBounds.getCenter();
+        						String uri = "http://maps.google.com/maps?saddr="+userLocation.latitude+","+userLocation.longitude+"&daddr="+destination.latitude+","+destination.longitude+"&mode=driving";
+        						// String uri = String.format(Locale.ENGLISH, "geo:%f,%f", destination.latitude, destination.longitude);
+        						Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+        						startActivity(intent);
+        					}
+        				  })
+        				.setNegativeButton("Here",new DialogInterface.OnClickListener() {
+        					public void onClick(DialogInterface dialog, int id) {
+        						dialog.cancel();
+        	    	   	    	// get center of current hunt unit bounds
+        						getUserLocation();
+        						if(userLocation != null) {
+            	    	   	    	LatLng destination = currentBounds.getCenter();
+            	            		Document doc = md.getDocument(userLocation, destination, GMapV2Direction.MODE_DRIVING);
+            	            		int duration = md.getDurationValue(doc);
+            	            		String distance = md.getDistanceText(doc);
+            	            		String start_address = md.getStartAddress(doc);
+            	            		String copy_right = md.getCopyRights(doc);
+            	            		// get direction polylines and display
+            	            		ArrayList<LatLng> directionPoint = md.getDirection(doc);
+            	            		PolylineOptions rectLine = new PolylineOptions().width(3).color(0xffff00ff);
+            	            		for(int i = 0 ; i < directionPoint.size() ; i++) {			
+            	            			rectLine.add(directionPoint.get(i));
+            	            		}
+            	            		currentDirections = map.addPolyline(rectLine);
+        						}
+        					}
+        				});
+    				AlertDialog alertDialog = alertDialogBuilder.create();
+    				alertDialog.show();
+    				return true;
+                }
             	else {
             		// need hunt unit view
             		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
         			alertDialogBuilder.setTitle("Error");
         			alertDialogBuilder
-        				.setMessage("There is no current hunt unit.")
+        				.setMessage("There is no current hunt unit or there is no GPS coverage")
         				.setCancelable(false)
         				.setPositiveButton("Continue",new DialogInterface.OnClickListener() {
         					public void onClick(DialogInterface dialog, int id) {
@@ -299,28 +313,26 @@ public class MapFragActivity extends Activity {
 	         .strokeWidth(3)
 	         .fillColor(0x453333CC));
 	    	 
-	    	 // get users current position and adds to builder
-	    	 LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
-	    	 Criteria criteria = new Criteria();
-	    	 String provider = service.getBestProvider(criteria, false);
-	    	 Location location = service.getLastKnownLocation(provider);
-	    	 LatLng userLocation = new LatLng(location.getLatitude(),location.getLongitude());
-//	    	 builder.include(userLocation);
-	    	 currentBounds = builder.build();
-	    	 // move camera to the bounds of the hunt unit
-	    	 CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(currentBounds.including(userLocation), 10);
-	    	 map.animateCamera(cameraUpdate);
+	    	 getUserLocation();
+	    	 if(userLocation != null) {
+		    	 currentBounds = builder.build();
+		    	 // move camera to the bounds of the hunt unit
+		    	 CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(currentBounds.including(userLocation), 10);
+		    	 map.animateCamera(cameraUpdate);
+	    	 }
+	    	 else {
+		    	 currentBounds = builder.build();
+		    	 // move camera to the bounds of the hunt unit
+		    	 CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(currentBounds, 10);
+		    	 map.animateCamera(cameraUpdate);
+	    	 }
 	    	 
 	    	 return true;
     	}
     	else {
     		// hunt unit does not exist
     		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-     
-			// set title
 			alertDialogBuilder.setTitle("Error");
- 
-			// set dialog message
 			alertDialogBuilder
 				.setMessage("That hunt unit does not exist. Please try again.")
 				.setCancelable(false)
@@ -329,11 +341,7 @@ public class MapFragActivity extends Activity {
 						dialog.cancel();
 					}
 				  });
- 
-				// create alert dialog
 				AlertDialog alertDialog = alertDialogBuilder.create();
- 
-				// show it
 				alertDialog.show();
 				return false;
     	}
@@ -349,5 +357,45 @@ public class MapFragActivity extends Activity {
     	        .position(new LatLng(tmpWaypoint.getLat(), tmpWaypoint.getLng()))
     	        .title(tmpWaypoint.getTitle()));
     	idMarker.put(marker, tmpWaypoint);
+    }
+    
+    public LatLng getUserLocation() {
+        if(!serviceLoc.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+	        map.setOnInfoWindowClickListener(new OnInfoWindowClickListener() {
+	            @Override
+	            public void onInfoWindowClick(final Marker marker) {
+	        		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MapFragActivity.this);
+	    			alertDialogBuilder.setTitle("Error");
+	    			alertDialogBuilder
+	    				.setMessage("GPS localization is turned off, would you like to turn it on?")
+	    				.setCancelable(false)
+	    				.setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+	    					public void onClick(DialogInterface dialog, int id) {
+	    						 startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+	    						 dialog.cancel();
+	    					}
+	    				  })
+	    				.setNegativeButton("No",new DialogInterface.OnClickListener() {
+	    					public void onClick(DialogInterface dialog, int id) {
+	    						 dialog.cancel();
+	    					}
+	    				});
+	    				AlertDialog alertDialog = alertDialogBuilder.create();
+	    				alertDialog.show();   
+	            }
+	        });
+
+        }
+    	 Criteria criteria = new Criteria();
+    	 String provider = serviceLoc.getBestProvider(criteria, false);
+    	 Location location = serviceLoc.getLastKnownLocation(provider);
+    	 if(location != null) {
+	    	 userLocation = new LatLng(location.getLatitude(),location.getLongitude());
+	    	 return userLocation;	 
+    	 }
+    	 else {
+    		 userLocation = null;
+    		 return userLocation;
+    	 }
     }
 }

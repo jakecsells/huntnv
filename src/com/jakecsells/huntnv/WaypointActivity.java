@@ -1,5 +1,7 @@
 package com.jakecsells.huntnv;
 
+import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
+import com.google.android.gms.maps.model.Marker;
 import com.jakecsells.huntnv.R;
 
 import android.location.Location;
@@ -32,12 +34,17 @@ public class WaypointActivity extends Activity {
     public void buttonCurrentLoc(View view) {
     	LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE); 
     	Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-    	double longitude = location.getLongitude();
-    	double latitude = location.getLatitude();
-    	EditText inputLat = (EditText)findViewById(R.id.input_lat);
-    	EditText inputLng = (EditText)findViewById(R.id.input_lng);
-    	inputLat.setText( String.valueOf(latitude));
-    	inputLng.setText( String.valueOf(longitude));
+    	if(location != null) {
+        	double longitude = location.getLongitude();
+        	double latitude = location.getLatitude();
+        	EditText inputLat = (EditText)findViewById(R.id.input_lat);
+        	EditText inputLng = (EditText)findViewById(R.id.input_lng);
+        	inputLat.setText( String.valueOf(latitude));
+        	inputLng.setText( String.valueOf(longitude));		
+    	}
+    	else {
+
+    	}
     }
     public void buttonSubmit(View view) {
     	double lat = 0;
